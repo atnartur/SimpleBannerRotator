@@ -1,0 +1,73 @@
+<div ng-controller="AdminOptionCtrl">
+    <div class="messages">
+        <div ng-repeat="message in messages" class="alert alert-{{message.type}}" role="alert">
+            <button type="button" class="close" ng-click="messages.splice($index, 1)"><span aria-hidden="true">&times;</span><span class="sr-only">Закрыть</span></button>
+            {{message.text}}
+        </div>
+    </div>
+    <form class="form-horizontal" method="post" action="" name="optionForm" ng-submit="submit()">
+        <div class="form-group">
+            <label class="control-label col-md-2" for="name">Название</label>
+            <div class="col-md-6">
+                <?=$this->tag->textField(array('name', 'class'=>'form-control', 'ng-model'=>'name', 'required'=>'required', 'maxlength'=>"255", 'pattern'=>"{0,255}", 'title'=>"Не более 255 символов."))?>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="filter_type">Тип отображаемый при фильтрации</label>
+            <div class="col-md-6">
+                <?=$this->tag->selectStatic(array(
+                    'filter_type',
+                    array(
+                        '' => '',
+                        'range' => 'Диапазон',
+                        'multiple_select' => 'Множественный выбор',
+                        'single_select' => 'Единичный выбор'
+                    ),
+                    'class'=>'form-control',
+                    'ng-model'=>'filterType',
+                    'ng-change'=>'rebuildBannerValueTypes()',
+                    'required'=>'required'
+                ))?>
+                <p class="help-block" ng-show="filterType">
+                    Так выглядит параметр такого типа:
+                    <img ng-src="/img/admin/examples/options/filter_type_{{filterType}}.png" class="shadow">
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="filterType == 'multiple_select' || filterType == 'single_select'">
+            <label class="control-label col-md-2" for="select_values">Набор возможных значений</label>
+            <div class="col-md-6">
+                <div class="row" style="margin-bottom: 10px;" ng-repeat="sv in selectValues">
+                    <div class="col-md-12">
+                        <div class="input-group">
+                            <input ng-model="sv.value" class="form-control" type="text" required="required" name="select_values[{{$index}}]" maxlength="255" pattern="{0,255}" title="Не более 255 символов.">
+                            <div class="input-group-addon" ng-click="selectValues.splice($index, 1)"><i class="fa fa-times"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <a href class="btn btn-success btn-block" ng-click="selectValues.push({})"><i class="fa fa-plus"></i></a>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="filterType">
+            <label class="control-label col-md-2" for="banner_value_type">Тип отображаемый при добавление/редактировании объявления</label>
+            <div class="col-md-6">
+                <select name="banner_value_type" ng-model="bannerValueType" class="form-control" required="required">
+                    <option value=""></option>
+                    <option ng-repeat="type in bannerValueTypes" value="{{type.id}}">{{type.name}}</option>
+                </select>
+                <p class="help-block" ng-show="bannerValueType">
+                    Так выглядит параметр такого типа:
+                    <img ng-src="/img/admin/examples/options/banner_value_type_{{bannerValueType}}.png" class="shadow">
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-8 col-md-offset-2">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </form>
+</div>

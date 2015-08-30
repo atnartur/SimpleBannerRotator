@@ -1,0 +1,31 @@
+<a style="margin-bottom: 20px;" class="btn btn-success btn-block btn-lg" href="<?=$this->url->get(array('for' => 'action', 'controller' => 'options', 'action' => 'add'))?>"><i class="fa fa-plus"></i> Добавить</a>
+
+<?php if(count($options)):?>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Название</th>
+                <th>Тип отображаемый при фильтрации</th>
+                <th>Тип отображаемый при добавление/редактировании товара</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach($options as $option):?>
+            <tr>
+                <td><?=$option->id?></td>
+                <td><?=$option->name?></td>
+                <td><?=$option->getFilterTypeName()?></td>
+                <td><?=$option->getItemValueTypeName()?></td>
+                <td>
+                    <a class="btn btn-success" href="<?=$this->url->get(array('for' => 'admin', 'controller' => 'options', 'action' => 'edit', 'id'=>$option->id))?>"><i class="fa fa-edit"></i></a>
+                    <a class="btn btn-danger" href="<?=$this->url->get(array('for' => 'admin', 'controller' => 'options', 'action' => 'delete', 'id'=>$option->id))?>"><i class="fa fa-trash-o"></i></a>
+                </td>
+            </tr>
+            <?php endforeach;?>
+        </tbody>
+    </table>
+<?php else:?>
+    <div class="none">Нет парметров для товаров</div>
+<?php endif;?>

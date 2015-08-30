@@ -1,0 +1,56 @@
+<div class="callout callout-warning">
+    <h4>Внимание!</h4>
+    <p>Любые изменения в полях этого параметра отразятся на объявлениях, в которых он используется. Будьте аккуратны!</p>
+</div>
+<div ng-controller="AdminOptionCtrl">
+    <div class="messages">
+        <div ng-repeat="message in messages" class="alert alert-{{message.type}}" role="alert">
+            <button type="button" class="close" ng-click="messages.splice($index, 1)"><span aria-hidden="true">&times;</span><span class="sr-only">Закрыть</span></button>
+            {{message.text}}
+        </div>
+    </div>
+    <form class="form-horizontal" method="post" action="" name="optionForm" ng-submit="submit()">
+        <div class="form-group">
+            <label class="control-label col-md-2" for="name">Название</label>
+            <div class="col-md-6">
+                <?=$this->tag->textField(array('name', 'class'=>'form-control', 'ng-init'=>"name = '{$option->name}'", 'ng-model'=>'name', 'required'=>'required', 'maxlength'=>"255", 'pattern'=>"{0,255}", 'title'=>"Не более 255 символов."))?>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="filter_type">Тип отображаемый при фильтрации</label>
+            <div class="col-md-6">
+                <p ng-init="filterType = '<?=$option->filter_type?>'" class="help-block">{{filterType == 'multiple_select' ? 'Множественный выбор' : (filterType == 'single_select' ? 'Единичный выбор' : (filterType == 'range' ? 'Диапазон' : ''))}}</p>
+            </div>
+        </div>
+
+        <div class="form-group" ng-show="filterType == 'multiple_select' || filterType == 'single_select'" ng-init="selectValues = <?=htmlspecialchars(json_encode($option->values->toArray()))?>">
+            <label class="control-label col-md-2" for="select_values">Набор возможных значений</label>
+            <div class="col-md-6">
+                <div class="row" style="margin-bottom: 10px;" ng-repeat="sv in selectValues">
+                    <div class="col-md-12">
+                        <input type="hidden" name="select_values[{{$index}}][new]" value="{{sv.new == undefined ? 0 : 1}}">
+                        <input type="hidden" name="select_values[{{$index}}][id]" value="{{sv.id}}">
+                        <div class="input-group">
+                            <input ng-model="sv.value" class="form-control" type="text" required="required" name="select_values[{{$index}}][value]" maxlength="255" pattern="{0,255}" title="Не более 255 символов.">
+                            <div class="input-group-addon" ng-click="removeSelectValueWithConfirm($index)"><i class="fa fa-times"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <a href class="btn btn-success btn-block" ng-click="selectValues.push({new: true})"><i class="fa fa-plus"></i></a>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2" for="banner_value_type">Тип отображаемый при добавление/редактировании объявления</label>
+            <div class="col-md-6">
+                <p ng-init="bannerValueType = '<?=$option->banner_value_type?>'" class="help-block">{{bannerValueType == 'multiple_select' ? 'Множественный выбор' : (bannerValueType == 'single_select' ? 'Единичный выбор' : (bannerValueType == 'range' ? 'Диапазон' : (bannerValueType == 'specific' ? 'Точное значение' : '')))}}</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-8 col-md-offset-2">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </form>
+</div>
