@@ -66,6 +66,100 @@ CREATE TABLE IF NOT EXISTS `views` (
   `clicked` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=319816 DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `options` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) NOT NULL,
+  `filter_type` ENUM('range','multiple_select','single_select') NOT NULL,
+  `item_value_type` ENUM('range','multiple_select','single_select','specific') NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `banners_options` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `item_id` INT(11) UNSIGNED NOT NULL,
+  `option_id` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `item_option_pair` (`item_id` ASC, `option_id` ASC),
+  INDEX `item_id` (`item_id` ASC),
+  INDEX `option_id` (`option_id` ASC),
+  CONSTRAINT `items_options_ibfk_1`
+    FOREIGN KEY (`item_id`)
+    REFERENCES `banners` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `items_options_ibfk_2`
+    FOREIGN KEY (`option_id`)
+    REFERENCES `options` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `banners_range_options_values` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `item_option_id` INT(11) UNSIGNED NOT NULL,
+  `from_value` DOUBLE NOT NULL,
+  `to_value` DOUBLE NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `item_option_id` (`item_option_id` ASC),
+  CONSTRAINT `items_range_options_values_ibfk_1`
+    FOREIGN KEY (`item_option_id`)
+    REFERENCES `banners_options` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `select_options_values` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `value` VARCHAR(255) NOT NULL,
+  `option_id` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `option_id` (`option_id` ASC),
+  CONSTRAINT `select_options_values_ibfk_1`
+    FOREIGN KEY (`option_id`)
+    REFERENCES `options` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `banners_select_options_values` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `item_option_id` INT(11) UNSIGNED NOT NULL,
+  `select_option_value_id` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `item_option_id_2` (`item_option_id` ASC, `select_option_value_id` ASC),
+  INDEX `item_option_id` (`item_option_id` ASC),
+  INDEX `select_option_value_id` (`select_option_value_id` ASC),
+  CONSTRAINT `items_select_options_values_ibfk_1`
+    FOREIGN KEY (`item_option_id`)
+    REFERENCES `banners_options` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `items_select_options_values_ibfk_2`
+    FOREIGN KEY (`select_option_value_id`)
+    REFERENCES `select_options_values` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+CREATE TABLE IF NOT EXISTS `banners_specific_options_values` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `item_option_id` INT(11) UNSIGNED NOT NULL,
+  `value` DOUBLE NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `item_options_id` (`item_option_id` ASC),
+  CONSTRAINT `items_specific_options_values_ibfk_1`
+    FOREIGN KEY (`item_option_id`)
+    REFERENCES `banners_options` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+
+
 ALTER TABLE `banners`
  ADD PRIMARY KEY (`id`), ADD KEY `advertiser_id` (`advertiser_id`);
 
