@@ -143,4 +143,95 @@ class Banners extends ModelBase
             $result = $this->update(array('archived'=>1));
         return $result;
     }
+
+    public static function findByOptions($options, $cat_id = NULL, $order = 'id', $sort = 'ASC') {
+        $sql = "SELECT * FROM `banners`
+        INNER JOIN `banners_parents` ON `banners_parents`.`banner_id` = `banners`.`id`
+        WHERE `banners_parents`.`parent_id` = {$cat_id} ";
+        if (count($options)) {
+            foreach($options as $option) {
+                $optionModel = Options::findFirst($option['id']);
+                if($optionModel) {
+                    if($optionModel->banner_value_type == 'single_select') {
+                        if($optionModel->filter_type == 'multiple_select' && (!isset($option['values']) || !count($option['values']))) continue;
+                        if($optionModel->filter_type == 'single_select' && empty($option['value'])) continue;
+                        $values = $optionModel->filter_type == 'single_select' ? '= '.$option['value'] : 'IN ('.implode(',',$option['values']).')';
+                        $sql.= " AND `banners`.`id` IN (
+                            SELECT `banners`.`id`
+                            FROM `banners`
+                            JOIN `banners_options` ON `banners_options`.`banner_id` = `banners`.`id`
+                            LEFT JOIN `banners_select_options_values` as `o{$option['id']}` ON `o{$option['id']}`.`banner_option_id` = `banners_options`.`id`
+                            WHERE `o{$option['id']}`.`select_option_value_id` {$values}
+                        )";
+                    }
+                    elseif($optionModel->banner_value_type == 'multiple_select') {
+                        if(isset($option['values']) && count($option['values'])) {
+                            $count_values = count($option['values']);
+                            $values_row = implode(',',$option['values']);
+                            $sql.= " AND `banners`.`id` IN (
+                                SELECT `banners`.`id`
+                                FROM `banners`
+                                JOIN `banners_options` ON `banners_options`.`banner_id` = `banners`.`id`
+                                JOIN  (SELECT `banner_option_id` FROM `banners_select_options_values` WHERE `select_option_value_id` IN ({$values_row}) GROUP BY `banner_option_id` HAVING COUNT(`banner_option_id`) = {$count_values}) as `o{$option['id']}` ON `o{$option['id']}`.`banner_option_id` = `banners_options`.`id`
+                            )";
+                        }
+                    }
+                    elseif($optionModel->banner_value_type == 'range') {
+                        // убираем все левые символы из строки и заменяем запятые на точки
+                        $from_value = filter_var(str_replace(',', '.', $option['from_value']), FILTER_SANITIZE_NUMBER_FLOAT, array('flags'=>FILTER_FLAG_ALLOW_FRACTION));
+                        $to_value = filter_var(str_replace(',', '.', $option['to_value']), FILTER_SANITIZE_NUMBER_FLOAT, array('flags'=>FILTER_FLAG_ALLOW_FRACTION));
+
+                        // Если хотя бы одно из значений содержит в себе хоть одну цифру (да, именно цифру... а вдруг там одна только точка)
+                        if(!empty(preg_match("/\d/",$from_value)) || !empty(preg_match("/\d/",$to_value))) {
+                            if(!empty(preg_match("/\d/",$from_value)) && !empty(preg_match("/\d/",$to_value)))
+                                $range_query = "(`o{$option['id']}`.`from_value`>={$from_value} AND `o{$option['id']}`.`from_value` <= {$to_value}) OR (`o{$option['id']}`.`to_value`<={$to_value} AND `o{$option['id']}`.`to_value`>={$from_value})";
+                            // Если пустое стартовое значение
+                            elseif(empty(preg_match("/\d/",$from_value)) && !empty(preg_match("/\d/",$to_value)))
+                                $range_query = "`o{$option['id']}`.`from_value`<={$to_value}";
+                            // Если пустое конечное значение
+                            elseif(!empty(preg_match("/\d/",$from_value)) && empty(preg_match("/\d/",$to_value)))
+                                $range_query = "`o{$option['id']}`.`to_value`>={$from_value}";
+                            else continue;
+                            $sql.= " AND `banners`.`id` IN (
+                                SELECT `banners`.`id`
+                                FROM `banners`
+                                JOIN `banners_options` ON `banners_options`.`banner_id` = `banners`.`id`
+                                LEFT JOIN `banners_range_options_values` as `o{$option['id']}` ON `o{$option['id']}`.`banner_option_id` = `banners_options`.`id`
+                                WHERE ({$range_query})
+                            )";
+                        }
+                    }
+                    elseif($optionModel->banner_value_type == 'specific') {
+                        // убираем все левые символы из строки и заменяем запятые на точки
+                        $from_value = filter_var(str_replace(',', '.', $option['from_value']), FILTER_SANITIZE_NUMBER_FLOAT, array('flags'=>FILTER_FLAG_ALLOW_FRACTION));
+                        $to_value = filter_var(str_replace(',', '.', $option['to_value']), FILTER_SANITIZE_NUMBER_FLOAT, array('flags'=>FILTER_FLAG_ALLOW_FRACTION));
+
+                        // Если хотя бы одно из значений содержит в себе хоть одну цифру (да, именно цифру... а вдруг там одна только точка)
+                        if(!empty(preg_match("/\d/",$from_value)) || !empty(preg_match("/\d/",$to_value))) {
+                            if(!empty(preg_match("/\d/",$from_value)) && !empty(preg_match("/\d/",$to_value)))
+                                $range_query = "`o{$option['id']}`.`value` >= {$from_value} AND `o{$option['id']}`.`value` <= {$to_value}";
+                            // Если пустое стартовое значение
+                            elseif(empty(preg_match("/\d/",$from_value)) && !empty(preg_match("/\d/",$to_value)))
+                                $range_query = "`o{$option['id']}`.`value`<={$to_value}";
+                            // Если пустое конечное значение
+                            elseif(!empty(preg_match("/\d/",$from_value)) && empty(preg_match("/\d/",$to_value)))
+                                $range_query = "`o{$option['id']}`.`value`>={$from_value}";
+                            else continue;
+                            $sql.= " AND `banners`.`id` IN (
+                                SELECT `banners`.`id`
+                                FROM `banners`
+                                JOIN `banners_options` ON `banners_options`.`banner_id` = `banners`.`id`
+                                LEFT JOIN `banners_specific_options_values` as `o{$option['id']}` ON `o{$option['id']}`.`banner_option_id` = `banners_options`.`id`
+                                WHERE ({$range_query})
+                            )";
+                        }
+                    }
+                }
+            }
+        }
+        $sql.= " ORDER BY {$order} {$sort};";
+        if($cat_id != NULL)
+            $banner = new Banners();
+        return new Resultset(null, $banner, $banner->getReadConnection()->query($sql));
+    }
 }
