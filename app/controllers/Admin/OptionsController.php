@@ -35,6 +35,7 @@ class OptionsController extends ControllerBase
 
         $this->assets->collection('bottom-js')
             ->addJs('https://ajax.googleapis.com/ajax/libs/angularjs/1.2.21/angular.min.js', false)
+            ->addJs('js/bootbox.min.js')
             ->addJs('js/angular/app.js')
             ->addJs('js/angular/AdminOption.ctrl.js');
     }
