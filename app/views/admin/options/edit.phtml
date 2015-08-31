@@ -1,6 +1,6 @@
 <div class="callout callout-warning">
     <h4>Внимание!</h4>
-    <p>Любые изменения в полях этого параметра отразятся на объявлениях, в которых он используется. Будьте аккуратны!</p>
+    <p>Любые изменения в полях этого параметра отразятся на баннерах, в которых он используется. Будьте аккуратны!</p>
 </div>
 <div ng-controller="AdminOptionCtrl">
     <div class="messages">
@@ -41,7 +41,7 @@
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-2" for="banner_value_type">Тип отображаемый при добавление/редактировании объявления</label>
+            <label class="control-label col-md-2" for="banner_value_type">Тип отображаемый при добавление/редактировании баннера</label>
             <div class="col-md-6">
                 <p ng-init="bannerValueType = '<?=$option->banner_value_type?>'" class="help-block">{{bannerValueType == 'multiple_select' ? 'Множественный выбор' : (bannerValueType == 'single_select' ? 'Единичный выбор' : (bannerValueType == 'range' ? 'Диапазон' : (bannerValueType == 'specific' ? 'Точное значение' : '')))}}</p>
             </div>

@@ -1,5 +1,4 @@
 app.controller('AdminOptionCtrl', function ($scope) {
-    console.log(222)
     $scope.AvilableBannerValueTypes = [
         {id:'range', name: 'Диапазон'},
         {id:'specific', name: 'Точное значение'},
@@ -39,7 +38,7 @@ app.controller('AdminOptionCtrl', function ($scope) {
     $scope.removeSelectValueWithConfirm = function(index) {
         if($scope.selectValues[index].new == undefined)
             bootbox.dialog({
-                message: "<p>Вы уверены что хотите удалить данное значение? Возможно оно используется товарами. Перед удалением убедитесь в обратном.</p><p class=\"text-muted\">Примечание: все изменения будут применены после нажатия кнопки \"Сохранить\"</p>",
+                message: "<p>Вы уверены что хотите удалить данное значение? Возможно оно используется баннерами. Перед удалением убедитесь в обратном.</p><p class=\"text-muted\">Примечание: все изменения будут применены после нажатия кнопки \"Сохранить\"</p>",
                 title: "Удаление значения параметра",
                 buttons: {
                     cancel: {
